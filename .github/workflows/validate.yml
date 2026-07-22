@@ -1,0 +1,49 @@
+name: Validate workflow template
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint markdown files
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
+
+      - name: Check CLAUDE.md has all required sections
+        run: |
+          set -e
+          required_sections=(
+            "## Project Overview"
+            "## Tech Stack"
+            "## Key Conventions"
+            "## Execution Environments"
+            "## Change Tiering: Classify Before Starting"
+            "## Workflow (MANDATORY per tier)"
+            "## Auto-Merge Rules"
+            "## Context Management (Automatic)"
+            "## Hard Rules"
+            "## Handling Ambiguity"
+          )
+          missing=0
+          for section in "${required_sections[@]}"; do
+            if ! grep -qF "$section" CLAUDE.md; then
+              echo "::error::Missing required section: $section"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Check placeholder tokens are well-formed
+        run: |
+          set -e
+          # Every {{...}} placeholder must close on the same line.
+          if grep -nE '\{\{[^}]*$' CLAUDE.md; then
+            echo "::error::Found an unclosed {{ placeholder above"
+            exit 1
+          fi

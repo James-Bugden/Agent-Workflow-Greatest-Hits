@@ -1,9 +1,9 @@
 # {{PROJECT_NAME}} — Agent Instructions
 
-> **Template notice:** This file is a generalized coding-agent workflow,
-> extracted from a working project (originally "HireSign"). Every
+> **Template notice:** This file is a generalized, tool- and model-agnostic
+> coding-agent workflow, extracted from a real project. Every
 > `{{DOUBLE_BRACE}}` token is a placeholder — fill them in for your project
-> before using this file as your repo's `CLAUDE.md`. Sections marked
+> before using this file as your repo's `AGENTS.md`. Sections marked
 > **(optional)** describe machinery that was specific to the original
 > project's local setup; keep, adapt, or delete them.
 
@@ -79,7 +79,7 @@ common way a workflow like this "doesn't work properly" in one environment.
 | **Quality gate** | Local gate (optional) **+** CI on the PR | CI on the PR (universal backstop) |
 | **Parallel heavy work** | Local orchestration tooling (optional) | In-session subagents instead |
 | **Design review** | A local browser-based review tool (optional) | Fall back to an inline chat-based review/approval step |
-| **PR / issue-tracker ops** | Native CLIs (`gh`, etc.) | Equivalent MCP tools, if `gh` isn't installed in the cloud |
+| **PR / issue-tracker ops** | Native CLIs (`gh`, etc.) | Equivalent API/integration tools, if the CLI isn't installed in the cloud |
 
 ### Environment-agnostic rules (apply EVERYWHERE)
 The Hard Rules, Change Tiering, the workflow phases, brand tokens, and
@@ -167,7 +167,7 @@ skip phases your tier requires.
 ### Phase 1 — Brainstorm
 Before writing any code:
 - **If no ticket exists for this work, create one first**, via your issue
-  tracker's API/MCP tool if available. Use this format:
+  tracker's API or integration tool if available. Use this format:
   - Title: imperative, scoped (e.g., "Fix analytics-export 401 from API key
     mismatch")
   - Description must include: **Current state** (what's broken/missing
@@ -573,7 +573,7 @@ top-level tree just because work is already in flight.
 
 If you run local orchestration tooling that spawns multiple agents across
 worktrees for Standard/Heavy tier work, document it here: how to launch it,
-where worktrees land, and any project-specific rules crewmates must follow
+where worktrees land, and any project-specific rules sub-agents must follow
 (self-merge policy, push gate, branch naming, issue-tracker mirroring,
 worktree teardown safety). This section is entirely optional — most teams
 using this template will rely on in-session subagents instead, launched

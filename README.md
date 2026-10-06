@@ -1,7 +1,7 @@
-# Flightplan — a coding-agent workflow
+# Coding Workflow — Greatest Hits
 
-A reusable `CLAUDE.md` workflow template for running coding agents
-(Claude Code, or similar) against a real codebase in a disciplined,
+A reusable `AGENTS.md` workflow template for running coding agents
+(any tool, any model) against a real codebase in a disciplined,
 ticket-driven way. Generalized from a working project's day-to-day workflow.
 
 It covers the parts that actually matter for agent-driven development:
@@ -29,7 +29,7 @@ It covers the parts that actually matter for agent-driven development:
 
 ## How to use this
 
-1. Copy `CLAUDE.md` into the root of your project's repo.
+1. Copy `AGENTS.md` into the root of your project's repo.
 2. Fill in every `{{DOUBLE_BRACE}}` placeholder — project description, tech
    stack, file-path conventions, issue-tracker ticket prefix, default
    branch name, test/lint/typecheck commands, and your own auto-merge
@@ -41,8 +41,10 @@ It covers the parts that actually matter for agent-driven development:
 4. Add your own team-specific rules under `Hard Rules` and
    `Data-Layer Rules` — the ones here are a reasonable default set, not a
    complete list.
-5. Commit it. Any Claude Code (or compatible) session opened against your
-   repo will pick it up automatically.
+5. Commit it. Tools that read `AGENTS.md` (Codex, Cursor, Copilot, Gemini
+   CLI, Aider, and others) pick it up automatically. For a tool that expects
+   a different filename, point it at this file rather than forking it, e.g.
+   `ln -s AGENTS.md CLAUDE.md` (Claude Code) or `ln -s AGENTS.md GEMINI.md`.
 
 ## What this is *not*
 
@@ -58,7 +60,7 @@ itself. `.github/workflows/validate.yml` runs on every push and PR to
 
 1. **Markdown lints clean** (`markdownlint-cli2`, config in
    `.markdownlint-cli2.jsonc`).
-2. **Required sections are present** in `CLAUDE.md` — including `## Testing`
+2. **Required sections are present** in `AGENTS.md` — including `## Testing`
    — so a future edit can't silently drop part of the contract.
 3. **Placeholders are well-formed** — every `{{TOKEN}}` closes on its line
    and matches `{{UPPER_SNAKE_CASE}}`.
@@ -71,9 +73,9 @@ Run the same checks locally:
 npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
 ```
 
-The workflow can't judge whether your filled-in `CLAUDE.md` makes sense for
+The workflow can't judge whether your filled-in `AGENTS.md` makes sense for
 your project; that remains a human call. For *your* project's testing
-rules, see the `## Testing` section of `CLAUDE.md`.
+rules, see the `## Testing` section of `AGENTS.md`.
 
 ## License
 

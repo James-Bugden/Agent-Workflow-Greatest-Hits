@@ -24,6 +24,9 @@
 - Issue tracker: {{ISSUE_TRACKER}} (ticket prefix: `{{TICKET_PREFIX}}`)
 - Version control: {{VCS_HOST}}
 - Package manager: {{PACKAGE_MANAGER}}
+- Test runner(s): {{TEST_RUNNER}} (unit/integration), {{E2E_RUNNER}} (end-to-end)
+- Test commands: `{{TEST_CMD}}` (full suite), `{{TEST_CMD_SINGLE}}` (one
+  file), `{{LINT_CMD}}`, `{{TYPECHECK_CMD}}` — see *Testing* below
 
 ## Key Conventions
 - Components / modules: {{COMPONENTS_PATH}}
@@ -228,7 +231,9 @@ quoting the approval, before Phase 3.
 
 ### Phase 3 — TDD Implementation
 Iron law: no production code without a failing test first.
-Red, then Green, then Refactor, for every task.
+Red, then Green, then Refactor, for every task. The full testing contract
+(what to test, at which layer, and how it is gated in CI) is in the
+**Testing** section below — follow it here.
 Compact your context / take stock after each completed task before starting
 the next.
 
@@ -241,7 +246,8 @@ Two-stage review before opening the PR:
    the gate was skipped — stop and run Phase 2.5.
 
 ### Phase 5 — Finish
-- Run the full test suite — all tests must pass
+- Run the full gate locally (`{{LINT_CMD}}`, `{{TYPECHECK_CMD}}`,
+  `{{TEST_CMD}}`) — everything must pass before you push
 - Commit: `{{TICKET_PREFIX}}-XXX: description`
 - Open PR: title starts with `{{TICKET_PREFIX}}-XXX`, body closes the ticket
 - Self-merge once all required checks pass, per Auto-Merge Rules — unless
@@ -252,6 +258,82 @@ Two-stage review before opening the PR:
   ending mid-work
 - If scope changed during implementation, update the ticket description so
   it reflects what actually shipped
+
+---
+
+## Testing
+
+Tests are how an agent proves its work, not a formality after the fact. The
+loop is the same in every environment; only *where* it runs changes.
+
+### The TDD loop (per task)
+1. **Red** — write the smallest test that expresses the acceptance
+   criterion. Run it. **Watch it fail, and confirm it fails for the right
+   reason** (an assertion about the missing behaviour, not an import error
+   or typo). A test you never saw fail proves nothing.
+2. **Green** — write the minimum production code to pass. No extra
+   behaviour.
+3. **Refactor** — clean up with the tests green. Re-run after every change.
+4. Commit (one task per commit), then run the whole suite before the next
+   task.
+
+For a bug fix, the failing test is a **regression test that reproduces the
+bug first**; the fix is only accepted once that test goes red → green.
+
+### What to test at which layer
+| Layer | Covers | Rule of thumb |
+|---|---|---|
+| **Unit** | Pure logic, utilities, hooks, reducers, validators | Fast, no network or DB. The bulk of your tests. |
+| **Integration** | A module against its real collaborators (DB, API handlers, access-control policies) | Use a dev/test database or branch — never production. |
+| **End-to-end** | A critical user journey through the real UI | Few and stable: sign-in, the money path, the core feature. |
+| **Visual / a11y** (optional) | Layout and accessibility regressions | Usually advisory, not required (see *Auto-Merge Rules*). |
+
+Always test the unhappy paths: empty, loading, error, unauthorized, and
+boundary inputs — not just the golden path.
+
+### Access-control and data-layer tests (Tier 3)
+- Every new table/collection ships with a test that proves a user **can**
+  read/write what they should **and cannot** read/write what they shouldn't
+  (cross-tenant and anonymous access both denied).
+- Migrations are applied to a throwaway dev/test database and the suite is
+  run against it before the PR opens.
+
+### Testing by tier
+| Tier | Tests required |
+|---|---|
+| **1 — Trivial** | None if there is no logic change; existing suite must stay green. Any logic change escalates to Tier 2. |
+| **2 — Standard** | Full TDD; unit tests for new logic, plus integration where it touches data. |
+| **3 — Heavy** | Full TDD at every layer touched, including access-control tests and at least one end-to-end journey for new pages/flows. |
+
+### Rules for tests
+- **No skipping, disabling, or deleting a failing test to get green.** Fix
+  the code, or fix the test if the *spec* changed — and say which in the
+  commit message.
+- **Never mock the thing under test.** Mock only true external boundaries
+  (third-party APIs, clocks, randomness).
+- **Deterministic or deleted.** A flaky test is a bug: fix the root cause
+  (waits, shared state, ordering). Re-running until it passes is not a fix.
+- **Tests are independent** — any test can run alone and in any order.
+- **No real PII or production secrets in fixtures.**
+- Coverage is a smell detector, not a goal: don't write assertions-free
+  tests to hit a number.
+
+### Verification before claiming "done"
+Do not say work is complete, fixed, or passing until you have run the
+commands and read their output. Report results faithfully — if something
+fails or was not run, say so. For user-visible changes, also exercise the
+feature for real (run the app, click through the golden path and one edge
+case); passing unit tests do not prove the UI works.
+
+### Where tests run
+| Stage | Local machine | Managed cloud |
+|---|---|---|
+| Per task | `{{TEST_CMD_SINGLE}}` then `{{TEST_CMD}}` | same |
+| Before push | `{{LINT_CMD}}` + `{{TYPECHECK_CMD}}` + `{{TEST_CMD}}` (optionally via a local push gate) | same, run by hand |
+| On the PR | CI re-runs the full gate — **the universal backstop** | CI is the guard |
+
+CI is the source of truth for "required checks" in *Auto-Merge Rules*. If CI
+is red, the PR is not done — root-cause it; never merge around it.
 
 ---
 
@@ -462,7 +544,7 @@ top-level tree just because work is already in flight.
 ---
 
 ## Hard Rules
-1. No production code without a failing test first
+1. No production code without a failing test first (see *Testing*)
 2. Every commit must contain the ticket ID
 3. Every PR title must start with the ticket ID
 4. Never push directly to the default branch

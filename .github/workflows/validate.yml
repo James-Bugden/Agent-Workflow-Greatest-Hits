@@ -25,6 +25,7 @@ jobs:
             "## Execution Environments"
             "## Change Tiering: Classify Before Starting"
             "## Workflow (MANDATORY per tier)"
+            "## Testing"
             "## Auto-Merge Rules"
             "## Context Management (Automatic)"
             "## Hard Rules"
@@ -45,5 +46,18 @@ jobs:
           # Every {{...}} placeholder must close on the same line.
           if grep -nE '\{\{[^}]*$' CLAUDE.md; then
             echo "::error::Found an unclosed {{ placeholder above"
+            exit 1
+          fi
+          # Every placeholder must be {{UPPER_SNAKE_CASE}}.
+          if grep -noE '\{\{[^}]*\}\}' CLAUDE.md | grep -vE '\{\{[A-Z][A-Z0-9_]*\}\}'; then
+            echo "::error::Found a malformed placeholder above"
+            exit 1
+          fi
+
+      - name: Check filled-in examples have no leftover placeholders
+        run: |
+          set -e
+          if [ -d examples ] && grep -rnE '\{\{[A-Z0-9_]+\}\}' examples; then
+            echo "::error::Placeholders left in examples/"
             exit 1
           fi

@@ -1,4 +1,4 @@
-# Flightplan — a coding-agent workflow
+# Coding Workflow — Greatest Hits
 
 A reusable `AGENTS.md` workflow template for running coding agents
 (any tool, any model) against a real codebase in a disciplined,

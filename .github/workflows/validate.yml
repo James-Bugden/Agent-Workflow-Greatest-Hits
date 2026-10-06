@@ -15,7 +15,7 @@ jobs:
       - name: Lint markdown files
         run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
 
-      - name: Check CLAUDE.md has all required sections
+      - name: Check AGENTS.md has all required sections
         run: |
           set -e
           required_sections=(
@@ -33,7 +33,7 @@ jobs:
           )
           missing=0
           for section in "${required_sections[@]}"; do
-            if ! grep -qF "$section" CLAUDE.md; then
+            if ! grep -qF "$section" AGENTS.md; then
               echo "::error::Missing required section: $section"
               missing=1
             fi
@@ -44,12 +44,12 @@ jobs:
         run: |
           set -e
           # Every {{...}} placeholder must close on the same line.
-          if grep -nE '\{\{[^}]*$' CLAUDE.md; then
+          if grep -nE '\{\{[^}]*$' AGENTS.md; then
             echo "::error::Found an unclosed {{ placeholder above"
             exit 1
           fi
           # Every placeholder must be {{UPPER_SNAKE_CASE}}.
-          if grep -noE '\{\{[^}]*\}\}' CLAUDE.md | grep -vE '\{\{[A-Z][A-Z0-9_]*\}\}'; then
+          if grep -noE '\{\{[^}]*\}\}' AGENTS.md | grep -vE '\{\{[A-Z][A-Z0-9_]*\}\}'; then
             echo "::error::Found a malformed placeholder above"
             exit 1
           fi
